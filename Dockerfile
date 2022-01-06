@@ -1,3 +1,5 @@
-FROM Ubuntu
-WORKDIR /tmp
-RUN echo "First Docker File to show" >/tmp/testfile
+FROM ubuntu 
+MAINTAINER rahulhasanhelp@gmail.com 
+
+RUN apt-get update 
+RUN apt-get install –y apache2
