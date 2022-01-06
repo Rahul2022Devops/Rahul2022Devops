@@ -1,6 +1,6 @@
 FROM centos:latest
 WORKDIR /var/www/html
-MAINTAINER rahulhasnan@gmail.com
+MAINTAINER rahulhasnann@gmail.com
 RUN yum install -y httpd \
  zip \
  unzip
