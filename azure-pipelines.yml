@@ -1,19 +1,51 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
+pr:
+- '*'
+
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+jobs:
+- job: Build
+  displayName: 'Build Job'
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Install Node.js'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  - script: |
+      npm install
+      npm run build
+    displayName: 'Build Application'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.SourcesDirectory)/dist'
+      artifactName: 'drop'
+    displayName: 'Publish Artifact'
+
+- job: Deploy
+  displayName: 'Deploy Job'
+  dependsOn: Build
+  environment: 'app-service-environment-rahul'
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: DownloadBuildArtifacts@0
+          inputs:
+            buildType: 'current'
+            downloadType: 'single'
+            artifactName: 'drop'
+            downloadPath: '$(System.ArtifactsDirectory)/drop'
+
+        - task: AzureRmWebAppDeployment@4
+          inputs:
+            ConnectionType: 'AzureRM'
+            azureSubscription: 'Jan_Service_Connection_Rahul'
+            appType: 'webAppLinux'
+            WebAppName: 'Jan-Web-App-Rahul'
+            packageForLinux: '$(System.ArtifactsDirectory)/drop/**/*.zip'
